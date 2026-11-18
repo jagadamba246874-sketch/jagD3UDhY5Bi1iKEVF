@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Jagadamba Enterprises</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#16222b">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Jagadamba">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="manifest" href="manifest.webmanifest">
+<script>
+  /* ====== PUT YOUR APP LINK HERE (the one ending in /exec), between the quotes ====== */
+  var APP_URL = 'PASTE_YOUR_APP_LINK_HERE';
+  /* ================================================================================= */
+
+  // opened from the home-screen icon -> go straight to the app
+  var fromHome = (window.navigator.standalone === true) ||
+    (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) ||
+    /[?&]app=1\b/.test(location.search);
+  var ready = /^https:\/\//.test(APP_URL);
+  if (fromHome && ready) location.replace(APP_URL);
+</script>
+<style>
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;background:#16222b;color:#f4f6f8;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}
+  main{min-height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px;padding:32px 22px;text-align:center}
+  img.logo{width:120px;height:120px;border-radius:28px;box-shadow:0 10px 30px rgba(0,0,0,.35)}
+  h1{margin:0;font-size:24px;letter-spacing:.5px}
+  h1 span{color:#f2a516}
+  .btn{display:inline-block;background:#f2a516;color:#16222b;font-weight:700;font-size:17px;text-decoration:none;padding:14px 26px;border-radius:12px}
+  .how{max-width:420px;width:100%;background:#1f2d38;border-radius:14px;padding:16px 18px;text-align:left;font-size:15px;line-height:1.5}
+  .how b{color:#ffe3a3}
+  .how p{margin:0 0 10px}.how p:last-child{margin:0}
+  .warn{background:#5b2a26;color:#ffd9d3;border-radius:10px;padding:12px 14px;max-width:420px;font-size:14px}
+</style>
+</head>
+<body>
+<main>
+  <img class="logo" src="icon-512.png" alt="JE logo">
+  <h1>JAGADAMBA <span>ENTERPRISES</span></h1>
+  <div id="warn" class="warn" hidden>The app link is not set yet. Open <b>index.html</b> and paste your link where it says PASTE_YOUR_APP_LINK_HERE.</div>
+  <a id="open" class="btn" href="#">Open the app</a>
+  <div class="how">
+    <p><b>iPhone (Safari):</b> tap the Share button <b>⬆︎</b> → <b>Add to Home Screen</b> → Add.</p>
+    <p><b>Android (Chrome):</b> tap <b>⋮</b> (top right) → <b>Add to Home screen</b> or <b>Install app</b> → Add.</p>
+    <p>Then open it from the new <b>JE</b> icon — it goes straight to the app.</p>
+  </div>
+</main>
+<script>
+  if (ready) document.getElementById('open').href = APP_URL;
+  else { document.getElementById('warn').hidden = false; document.getElementById('open').style.display = 'none'; }
+</script>
+</body>
+</html>
