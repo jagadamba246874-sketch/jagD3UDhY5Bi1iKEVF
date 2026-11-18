@@ -15,7 +15,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <script>
   /* ====== PUT YOUR APP LINK HERE (the one ending in /exec), between the quotes ====== */
-  var APP_URL = 'https://script.google.com/macros/s/AKfycbzlULSLpZEK1gVfeTsX8H731lJqARJajLCyld0-ME1O91fzsH_1H6QRr0sxh0BA9OQ/exec';
+  var APP_URL = 'PASTE_YOUR_APP_LINK_HERE';
   /* ================================================================================= */
 
   // opened from the home-screen icon -> go straight to the app
@@ -23,7 +23,7 @@
     (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) ||
     /[?&]app=1\b/.test(location.search);
   var ready = /^https:\/\//.test(APP_URL);
-  if (fromHome && ready) location.replace(APP_URL);
+  if (fromHome && ready) { document.documentElement.className = 'go'; location.replace(APP_URL); }
 </script>
 <style>
   *{box-sizing:border-box}
@@ -36,6 +36,8 @@
   .how{max-width:420px;width:100%;background:#1f2d38;border-radius:14px;padding:16px 18px;text-align:left;font-size:15px;line-height:1.5}
   .how b{color:#ffe3a3}
   .how p{margin:0 0 10px}.how p:last-child{margin:0}
+  .go .how,.go .btn,.go h1,.go .warn{display:none}
+  .go img.logo{animation:pulse 1.2s ease-in-out infinite}@keyframes pulse{50%{transform:scale(.94);opacity:.8}}
   .warn{background:#5b2a26;color:#ffd9d3;border-radius:10px;padding:12px 14px;max-width:420px;font-size:14px}
 </style>
 </head>
