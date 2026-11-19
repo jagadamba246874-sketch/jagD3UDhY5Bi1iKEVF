@@ -9,13 +9,28 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Jagadamba">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
-<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png" id="lnkApple">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png" id="lnkIcon">
 <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
-<link rel="manifest" href="manifest.webmanifest">
+<link rel="manifest" href="manifest.webmanifest" id="lnkMan">
+<script>
+  /* the icon picked on this page (before Install / Add to Home Screen) */
+  var ICONS = [["navy", "Navy & amber", "#16222b"], ["white", "White", "#ffffff"], ["charcoal", "Charcoal", "#2a2d31"]];
+  var ICON = 'navy', NAMED = false; try { ICON = localStorage.getItem('je-icon3') || 'navy'; NAMED = localStorage.getItem('je-named') === '1'; } catch (e) {}
+  function key() { return ICON + (NAMED ? '-n' : ''); }
+  function useIcon(k) {
+    var x = ICONS.filter(function (i) { return i[0] === k; })[0] || ICONS[0]; ICON = x[0]; var f = key();
+    document.getElementById('lnkMan').href = 'manifest-' + f + '.webmanifest';
+    document.getElementById('lnkApple').href = 'icons/' + f + '-180.png';
+    document.getElementById('lnkIcon').href = 'icons/' + f + '-192.png';
+    var tc = document.querySelector('meta[name=theme-color]'); if (tc) tc.content = x[2];
+    try { localStorage.setItem('je-icon3', x[0]); localStorage.setItem('je-named', NAMED ? '1' : ''); } catch (e) {}
+  }
+  useIcon(ICON);
+</script>
 <script>
   /* ====== PUT YOUR APP LINK HERE (the one ending in /exec), between the quotes ====== */
-  var APP_URL = 'https://script.google.com/macros/s/AKfycbzlULSLpZEK1gVfeTsX8H731lJqARJajLCyld0-ME1O91fzsH_1H6QRr0sxh0BA9OQ/exec';
+  var APP_URL = 'PASTE_YOUR_APP_LINK_HERE';
   /* ================================================================================= */
 
   // opened from the home-screen icon -> go straight to the app
@@ -23,7 +38,9 @@
     (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) ||
     /[?&]app=1\b/.test(location.search);
   var ready = /^https:\/\//.test(APP_URL);
-  if (fromHome && ready) { document.documentElement.className = 'go'; location.replace(APP_URL); }
+  // opened from the home-screen icon -> show the app inside this page, so the phone keeps it full screen like an app
+  // (going to the Google link directly makes Android show a browser bar on top)
+  if (fromHome && ready) document.documentElement.className = 'go app';
 </script>
 <style>
   *{box-sizing:border-box}
@@ -38,22 +55,60 @@
   .how p{margin:0 0 10px}.how p:last-child{margin:0}
   .go .how,.go .btn,.go h1,.go .warn{display:none}
   .go img.logo{animation:pulse 1.2s ease-in-out infinite}@keyframes pulse{50%{transform:scale(.94);opacity:.8}}
+  .app body{overflow:hidden;background:#eef1f3}
+  .app main{display:none}
+  #appf{position:fixed;inset:0;width:100%;height:100%;height:100dvh;border:0;display:none;background:#eef1f3}
+  .app #appf{display:block}
+  #spl{position:fixed;inset:0;display:none;place-items:center;background:#16222b;transition:opacity .35s;z-index:2}
+  .app #spl{display:grid}#spl.done{opacity:0;pointer-events:none}
+  #spl img{width:110px;height:110px;border-radius:26px;animation:pulse 1.2s ease-in-out infinite}
+  .pick{max-width:440px;width:100%;background:#1f2d38;border-radius:14px;padding:14px 14px 16px}
+  .pick b{display:block;text-align:left;font-size:15px;margin:0 2px 10px;color:#ffe3a3}
+  .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px 12px}
+  .seg2{display:grid;grid-template-columns:1fr 1fr;gap:4px;padding:4px;border-radius:11px;background:#16222b;margin:0 0 14px}
+  .seg2 button{height:36px;border:0;border-radius:8px;background:transparent;color:#c9d3dc;font:600 14px system-ui,sans-serif;cursor:pointer}
+  .seg2 button.on{background:#f2a516;color:#16222b}
+  .grid button{border:0;padding:0;background:transparent;cursor:pointer;display:grid;gap:5px;justify-items:center;color:#c9d3dc;font:500 11.5px system-ui,sans-serif}
+  .grid img{width:100%;max-width:92px;aspect-ratio:1;border-radius:18px;transition:transform .2s,box-shadow .2s;box-shadow:0 0 0 1px rgba(255,255,255,.12)}
+  .grid button.on img{box-shadow:0 0 0 3px #f2a516;transform:scale(1.06)}
+  .grid button.on{color:#fff}
+  .go .pick{display:none}
   .warn{background:#5b2a26;color:#ffd9d3;border-radius:10px;padding:12px 14px;max-width:420px;font-size:14px}
 </style>
 </head>
 <body>
 <main>
-  <img class="logo" src="icon-512.png" alt="JE logo">
+  <img class="logo" id="bigLogo" src="icon-512.png" alt="JE logo">
   <h1>JAGADAMBA <span>ENTERPRISES</span></h1>
   <div id="warn" class="warn" hidden>The app link is not set yet. Open <b>index.html</b> and paste your link where it says PASTE_YOUR_APP_LINK_HERE.</div>
+  <div class="pick"><b>1. Pick the app icon</b><div class="seg2"><button type="button" data-named="0">Logo only</button><button type="button" data-named="1">With name</button></div><div class="grid" id="grid"></div></div>
   <a id="open" class="btn" href="#">Open the app</a>
   <div class="how">
+    <p><b>2. Add it to the home screen</b> — the icon you picked is the one that’s used.</p>
     <p><b>iPhone (Safari):</b> tap the Share button <b>⬆︎</b> → <b>Add to Home Screen</b> → Add.</p>
     <p><b>Android (Chrome):</b> tap <b>⋮</b> (top right) → <b>Add to Home screen</b> or <b>Install app</b> → Add.</p>
     <p>Then open it from the new <b>JE</b> icon — it goes straight to the app.</p>
   </div>
 </main>
+<div id="spl"><img id="splImg" src="icon-512.png" alt=""></div>
+<iframe id="appf" title="Jagadamba Enterprises" allow="camera; clipboard-read; clipboard-write; fullscreen; web-share" referrerpolicy="no-referrer-when-downgrade"></iframe>
 <script>
+  if (document.documentElement.classList.contains('app')) {
+    var f = document.getElementById('appf'); f.src = APP_URL;
+    f.addEventListener('load', function () { setTimeout(function () { document.getElementById('spl').classList.add('done'); }, 600); });
+    setTimeout(function () { document.getElementById('spl').classList.add('done'); }, 8000);
+  }
+  (function () {
+    var g = document.getElementById('grid'), big = document.getElementById('bigLogo');
+    function paint() {
+      [].forEach.call(g.children, function (b) { var k = b.getAttribute('data-k'); b.classList.toggle('on', k === ICON); b.querySelector('img').src = 'icons/' + k + (NAMED ? '-n' : '') + '-192.png'; });
+      [].forEach.call(document.querySelectorAll('[data-named]'), function (b) { b.classList.toggle('on', (b.getAttribute('data-named') === '1') === NAMED); });
+      big.src = 'icons/' + key() + '-512.png'; document.getElementById('splImg').src = 'icons/' + key() + '-512.png';
+    }
+    ICONS.forEach(function (x) { var b = document.createElement('button'); b.type = 'button'; b.setAttribute('data-k', x[0]); b.innerHTML = '<img alt="">' + x[1]; b.onclick = function () { useIcon(x[0]); paint(); }; g.appendChild(b); });
+    [].forEach.call(document.querySelectorAll('[data-named]'), function (b) { b.onclick = function () { NAMED = b.getAttribute('data-named') === '1'; useIcon(ICON); paint(); }; });
+    paint();
+  })();
   if (ready) document.getElementById('open').href = APP_URL;
   else { document.getElementById('warn').hidden = false; document.getElementById('open').style.display = 'none'; }
 </script>
