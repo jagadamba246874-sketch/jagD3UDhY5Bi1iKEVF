@@ -94,9 +94,14 @@
 <iframe id="appf" title="Jagadamba Enterprises" allow="camera; clipboard-read; clipboard-write; fullscreen; web-share" referrerpolicy="no-referrer-when-downgrade"></iframe>
 <script>
   if (document.documentElement.classList.contains('app')) {
-    var f = document.getElementById('appf'); f.src = APP_URL;
-    f.addEventListener('load', function () { setTimeout(function () { document.getElementById('spl').classList.add('done'); }, 600); });
-    setTimeout(function () { document.getElementById('spl').classList.add('done'); }, 8000);
+    var f = document.getElementById('appf'), spl = document.getElementById('spl');
+    function hideSpl() { spl.classList.add('done'); }
+    f.src = APP_URL;
+    // the app says when its first screen is on; the app's own loading screen takes over after 2.5 s at most
+    window.addEventListener('message', function (e) { if (e && e.data === 'je-ready') hideSpl(); });
+    f.addEventListener('load', function () { setTimeout(hideSpl, 300); });
+    setTimeout(hideSpl, 2500);
+    spl.addEventListener('pointerdown', hideSpl);
   }
   (function () {
     var g = document.getElementById('grid'), big = document.getElementById('bigLogo');
