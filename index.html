@@ -95,7 +95,7 @@
 <script>
   if (document.documentElement.classList.contains('app')) {
     var f = document.getElementById('appf'), spl = document.getElementById('spl');
-    function hideSpl() { spl.classList.add('done'); }
+    function hideSpl() { if (spl.parentNode) spl.parentNode.removeChild(spl); } // removed outright: on some Android phones a fade-out was not redrawn until the screen was touched
     f.src = APP_URL;
     // the app says when its first screen is on; the app's own loading screen takes over after 2.5 s at most
     window.addEventListener('message', function (e) { if (e && e.data === 'je-ready') hideSpl(); });
