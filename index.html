@@ -15,8 +15,8 @@
 <link rel="manifest" href="manifest.webmanifest" id="lnkMan">
 <script>
   /* the icon picked on this page (before Install / Add to Home Screen) */
-  var ICONS = [["navy", "Navy & amber", "#16222b"], ["white", "White", "#ffffff"], ["charcoal", "Charcoal", "#2a2d31"]];
-  var ICON = 'navy', NAMED = false; try { ICON = localStorage.getItem('je-icon3') || 'navy'; NAMED = localStorage.getItem('je-named') === '1'; } catch (e) {}
+  var ICONS = [["white", "Light", "#ffffff"], ["dark", "Dark", "#22262c"]];
+  var ICON = 'white', NAMED = false; try { ICON = localStorage.getItem('je-icon4') || 'white'; NAMED = localStorage.getItem('je-named') === '1'; } catch (e) {}
   function key() { return ICON + (NAMED ? '-n' : ''); }
   function useIcon(k) {
     var x = ICONS.filter(function (i) { return i[0] === k; })[0] || ICONS[0]; ICON = x[0]; var f = key();
@@ -24,13 +24,13 @@
     document.getElementById('lnkApple').href = 'icons/' + f + '-180.png';
     document.getElementById('lnkIcon').href = 'icons/' + f + '-192.png';
     var tc = document.querySelector('meta[name=theme-color]'); if (tc) tc.content = x[2];
-    try { localStorage.setItem('je-icon3', x[0]); localStorage.setItem('je-named', NAMED ? '1' : ''); } catch (e) {}
+    try { localStorage.setItem('je-icon4', x[0]); localStorage.setItem('je-named', NAMED ? '1' : ''); } catch (e) {}
   }
   useIcon(ICON);
 </script>
 <script>
   /* ====== PUT YOUR APP LINK HERE (the one ending in /exec), between the quotes ====== */
-  var APP_URL = 'https://script.google.com/macros/s/AKfycbzlULSLpZEK1gVfeTsX8H731lJqARJajLCyld0-ME1O91fzsH_1H6QRr0sxh0BA9OQ/exec';
+  var APP_URL = 'PASTE_YOUR_APP_LINK_HERE';
   /* ================================================================================= */
 
   // opened from the home-screen icon -> go straight to the app
@@ -40,7 +40,12 @@
   var ready = /^https:\/\//.test(APP_URL);
   // opened from the home-screen icon -> show the app inside this page, so the phone keeps it full screen like an app
   // (going to the Google link directly makes Android show a browser bar on top)
-  if (fromHome && ready) document.documentElement.className = 'go app';
+  if (fromHome && ready) {
+    document.documentElement.className = 'go app';
+    document.documentElement.style.background = '#f8f7f4';
+    // the opening animation starts on the very first frame (no blue splash screen)
+    document.write('<script src="je-loader.js"><\/script>');
+  }
 </script>
 <style>
   *{box-sizing:border-box}
@@ -55,13 +60,10 @@
   .how p{margin:0 0 10px}.how p:last-child{margin:0}
   .go .how,.go .btn,.go h1,.go .warn{display:none}
   .go img.logo{animation:pulse 1.2s ease-in-out infinite}@keyframes pulse{50%{transform:scale(.94);opacity:.8}}
-  .app body{overflow:hidden;background:#eef1f3}
+  .app,.app body{overflow:hidden;background:#f8f7f4}
   .app main{display:none}
   #appf{position:fixed;inset:0;width:100%;height:100%;height:100dvh;border:0;display:none;background:#eef1f3}
   .app #appf{display:block}
-  #spl{position:fixed;inset:0;display:none;place-items:center;background:#16222b;transition:opacity .35s;z-index:2}
-  .app #spl{display:grid}#spl.done{opacity:0;pointer-events:none}
-  #spl img{width:110px;height:110px;border-radius:26px;animation:pulse 1.2s ease-in-out infinite}
   .pick{max-width:440px;width:100%;background:#1f2d38;border-radius:14px;padding:14px 14px 16px}
   .pick b{display:block;text-align:left;font-size:15px;margin:0 2px 10px;color:#ffe3a3}
   .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px 12px}
@@ -90,25 +92,27 @@
     <p>Then open it from the new <b>JE</b> icon — it goes straight to the app.</p>
   </div>
 </main>
-<div id="spl"><img id="splImg" src="icon-512.png" alt=""></div>
 <iframe id="appf" title="Jagadamba Enterprises" allow="camera; clipboard-read; clipboard-write; fullscreen; web-share" referrerpolicy="no-referrer-when-downgrade"></iframe>
 <script>
   if (document.documentElement.classList.contains('app')) {
-    var f = document.getElementById('appf'), spl = document.getElementById('spl');
-    function hideSpl() { if (spl.parentNode) spl.parentNode.removeChild(spl); } // removed outright: on some Android phones a fade-out was not redrawn until the screen was touched
-    f.src = APP_URL;
-    // the app says when its first screen is on; the app's own loading screen takes over after 2.5 s at most
-    window.addEventListener('message', function (e) { if (e && e.data === 'je-ready') hideSpl(); });
-    f.addEventListener('load', function () { setTimeout(hideSpl, 300); });
-    setTimeout(hideSpl, 2500);
-    spl.addEventListener('pointerdown', hideSpl);
+    var f = document.getElementById('appf');
+    function L(fn) { try { if (window.JELoader) window.JELoader[fn](); } catch (e) {} }
+    f.src = APP_URL + (APP_URL.indexOf('?') < 0 ? '?' : '&') + 'lch=1';
+    // the app says when its first screen is drawn (je-ready) or when it asks for the PIN (je-pin)
+    window.addEventListener('message', function (e) {
+      if (!e) return;
+      if (e.data && typeof e.data === 'object' && 'jeCfg' in e.data) { try { if (e.data.jeCfg) localStorage.setItem('je-loader-cfg', String(e.data.jeCfg)); else localStorage.removeItem('je-loader-cfg'); } catch (x) {} return; } // the look from Settings › Loading screen, for the next opening
+      if (e.data === 'je-ready') L('ready');
+      else if (e.data === 'je-pin') L('dismiss');
+    });
+    setTimeout(function () { L('dismiss'); }, 30000); // never stay on the animation if the app goes quiet
   }
   (function () {
     var g = document.getElementById('grid'), big = document.getElementById('bigLogo');
     function paint() {
       [].forEach.call(g.children, function (b) { var k = b.getAttribute('data-k'); b.classList.toggle('on', k === ICON); b.querySelector('img').src = 'icons/' + k + (NAMED ? '-n' : '') + '-192.png'; });
       [].forEach.call(document.querySelectorAll('[data-named]'), function (b) { b.classList.toggle('on', (b.getAttribute('data-named') === '1') === NAMED); });
-      big.src = 'icons/' + key() + '-512.png'; document.getElementById('splImg').src = 'icons/' + key() + '-512.png';
+      big.src = 'icons/' + key() + '-512.png';
     }
     ICONS.forEach(function (x) { var b = document.createElement('button'); b.type = 'button'; b.setAttribute('data-k', x[0]); b.innerHTML = '<img alt="">' + x[1]; b.onclick = function () { useIcon(x[0]); paint(); }; g.appendChild(b); });
     [].forEach.call(document.querySelectorAll('[data-named]'), function (b) { b.onclick = function () { NAMED = b.getAttribute('data-named') === '1'; useIcon(ICON); paint(); }; });
