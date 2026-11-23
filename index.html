@@ -15,22 +15,25 @@
 <link rel="manifest" href="manifest.webmanifest" id="lnkMan">
 <script>
   /* the icon picked on this page (before Install / Add to Home Screen) */
+  /* icon = logo (dropdown) + background (Light / Dark) + Logo only / With name; files: icons/[logo-]white|dark[-n]-192.png */
+  var LOGOS = [["", "JE classic"], ["pc", "Brush & tray · navy + coral"], ["pt", "Brush & tray · navy + teal"], ["sl", "Dovetail slam"], ["tp", "Measuring tape"], ["hg", "Opening hinge"]];
   var ICONS = [["white", "Light", "#ffffff"], ["dark", "Dark", "#22262c"]];
   var ICON = 'white', NAMED = false; try { ICON = localStorage.getItem('je-icon4') || 'white'; NAMED = localStorage.getItem('je-named') === '1'; } catch (e) {}
+  function split(k) { var m = /^(?:(\w\w)-)?(white|dark)$/.exec(k || ''); return m && (!m[1] || LOGOS.some(function (l) { return l[0] === m[1]; })) ? [m[1] || '', m[2]] : ['', 'white']; }
   function key() { return ICON + (NAMED ? '-n' : ''); }
   function useIcon(k) {
-    var x = ICONS.filter(function (i) { return i[0] === k; })[0] || ICONS[0]; ICON = x[0]; var f = key();
+    var sp = split(k), x = ICONS.filter(function (i) { return i[0] === sp[1]; })[0]; ICON = (sp[0] ? sp[0] + '-' : '') + sp[1]; var f = key();
     document.getElementById('lnkMan').href = 'manifest-' + f + '.webmanifest';
     document.getElementById('lnkApple').href = 'icons/' + f + '-180.png';
     document.getElementById('lnkIcon').href = 'icons/' + f + '-192.png';
     var tc = document.querySelector('meta[name=theme-color]'); if (tc) tc.content = x[2];
-    try { localStorage.setItem('je-icon4', x[0]); localStorage.setItem('je-named', NAMED ? '1' : ''); } catch (e) {}
+    try { localStorage.setItem('je-icon4', ICON); localStorage.setItem('je-named', NAMED ? '1' : ''); } catch (e) {}
   }
   useIcon(ICON);
 </script>
 <script>
   /* ====== PUT YOUR APP LINK HERE (the one ending in /exec), between the quotes ====== */
-  var APP_URL = 'https://script.google.com/macros/s/AKfycbzlULSLpZEK1gVfeTsX8H731lJqARJajLCyld0-ME1O91fzsH_1H6QRr0sxh0BA9OQ/exec';
+  var APP_URL = 'PASTE_YOUR_APP_LINK_HERE';
   /* ================================================================================= */
 
   // opened from the home-screen icon -> go straight to the app
@@ -44,6 +47,7 @@
     document.documentElement.className = 'go app';
     document.documentElement.style.background = '#f8f7f4';
     // the opening animation starts on the very first frame (no blue splash screen)
+    try { var lc = JSON.parse(localStorage.getItem('je-loader-cfg') || '{}') || {}, la = ((lc.phone || lc.desk) ? (lc[(window.innerWidth || 1024) < 700 ? 'phone' : 'desk'] || {}) : lc).anim; if (/^(brush|brusht|roller|dove|slide|tape|tcase|hinge|swing)$/.test(la || 'dove')) document.write('<script src="je-anim.js"><\/script>'); } catch (e) {} // the JEAnimations pictures, only for those looks
     document.write('<script src="je-loader.js"><\/script>');
   }
 </script>
@@ -66,7 +70,8 @@
   .app #appf{display:block}
   .pick{max-width:440px;width:100%;background:#1f2d38;border-radius:14px;padding:14px 14px 16px}
   .pick b{display:block;text-align:left;font-size:15px;margin:0 2px 10px;color:#ffe3a3}
-  .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px 12px}
+  .grid{display:grid;grid-template-columns:repeat(2,minmax(0,110px));justify-content:center;gap:14px 28px}
+  .lsel{display:block;width:100%;height:40px;margin:0 0 10px;padding:0 12px;border:0;border-radius:11px;background:#16222b;color:#f4f6f8;font:600 14.5px system-ui,sans-serif;appearance:auto}
   .seg2{display:grid;grid-template-columns:1fr 1fr;gap:4px;padding:4px;border-radius:11px;background:#16222b;margin:0 0 14px}
   .seg2 button{height:36px;border:0;border-radius:8px;background:transparent;color:#c9d3dc;font:600 14px system-ui,sans-serif;cursor:pointer}
   .seg2 button.on{background:#f2a516;color:#16222b}
@@ -83,7 +88,7 @@
   <img class="logo" id="bigLogo" src="icon-512.png" alt="JE logo">
   <h1>JAGADAMBA <span>ENTERPRISES</span></h1>
   <div id="warn" class="warn" hidden>The app link is not set yet. Open <b>index.html</b> and paste your link where it says PASTE_YOUR_APP_LINK_HERE.</div>
-  <div class="pick"><b>1. Pick the app icon</b><div class="seg2"><button type="button" data-named="0">Logo only</button><button type="button" data-named="1">With name</button></div><div class="grid" id="grid"></div></div>
+  <div class="pick"><b>1. Pick the app icon</b><select id="lgSel" class="lsel" aria-label="Logo"></select><div class="seg2"><button type="button" data-named="0">Logo only</button><button type="button" data-named="1">With name</button></div><div class="grid" id="grid"></div></div>
   <a id="open" class="btn" href="#">Open the app</a>
   <div class="how">
     <p><b>2. Add it to the home screen</b> — the icon you picked is the one that’s used.</p>
@@ -110,11 +115,15 @@
   (function () {
     var g = document.getElementById('grid'), big = document.getElementById('bigLogo');
     function paint() {
-      [].forEach.call(g.children, function (b) { var k = b.getAttribute('data-k'); b.classList.toggle('on', k === ICON); b.querySelector('img').src = 'icons/' + k + (NAMED ? '-n' : '') + '-192.png'; });
+      var sp = split(ICON), pre = sp[0] ? sp[0] + '-' : ''; document.getElementById('lgSel').value = sp[0];
+      [].forEach.call(g.children, function (b) { var k = b.getAttribute('data-bg'); b.classList.toggle('on', k === sp[1]); b.querySelector('img').src = 'icons/' + pre + k + (NAMED ? '-n' : '') + '-192.png'; });
       [].forEach.call(document.querySelectorAll('[data-named]'), function (b) { b.classList.toggle('on', (b.getAttribute('data-named') === '1') === NAMED); });
       big.src = 'icons/' + key() + '-512.png';
     }
-    ICONS.forEach(function (x) { var b = document.createElement('button'); b.type = 'button'; b.setAttribute('data-k', x[0]); b.innerHTML = '<img alt="">' + x[1]; b.onclick = function () { useIcon(x[0]); paint(); }; g.appendChild(b); });
+    var sel = document.getElementById('lgSel');
+    LOGOS.forEach(function (l) { var o = document.createElement('option'); o.value = l[0]; o.textContent = l[1]; sel.appendChild(o); });
+    sel.onchange = function () { useIcon((sel.value ? sel.value + '-' : '') + split(ICON)[1]); paint(); };
+    ICONS.forEach(function (x) { var b = document.createElement('button'); b.type = 'button'; b.setAttribute('data-bg', x[0]); b.innerHTML = '<img alt="">' + x[1]; b.onclick = function () { var lg = split(ICON)[0]; useIcon((lg ? lg + '-' : '') + x[0]); paint(); }; g.appendChild(b); });
     [].forEach.call(document.querySelectorAll('[data-named]'), function (b) { b.onclick = function () { NAMED = b.getAttribute('data-named') === '1'; useIcon(ICON); paint(); }; });
     paint();
   })();
